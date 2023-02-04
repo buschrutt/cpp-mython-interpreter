@@ -7,19 +7,19 @@ using namespace std;
 
 namespace ast {
 
-using runtime::Closure;
-using runtime::Context;
-using runtime::ObjectHolder;
+    using runtime::Closure;
+    using runtime::Context;
+    using runtime::ObjectHolder;
 
-namespace {
-const string ADD_METHOD = "__add__"s;
-const string INIT_METHOD = "__init__"s;
-}  // namespace
+    namespace {
+        [[maybe_unused]] const string ADD_METHOD = "__add__"s;
+        [[maybe_unused]] const string INIT_METHOD = "__init__"s;
+    }  // namespace
 
-ObjectHolder Assignment::Execute(Closure& /*closure*/, Context& /*context*/) {
-    // Заглушка. Реализуйте метод самостоятельно
-    return {};
-}
+    ObjectHolder Assignment::Execute(Closure& /*closure*/, Context& /*context*/) {
+        // Заглушка. Реализуйте метод самостоятельно
+        return {};
+    }
 
 Assignment::Assignment(std::string /*var*/, std::unique_ptr<Statement> /*rv*/) {
 }

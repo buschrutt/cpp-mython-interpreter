@@ -94,15 +94,16 @@ namespace parse {
     void Lexer::RemoveEmptyLines() {
         int space_count = 0;
         while (input_.get(c_)){
-            if (c_ == '#'){
+            if (c_ == '#'){ // if # met gets all line
                 getline(input_, line_);
+                space_count = 0;
             } else {
                 if (c_ != ' ' && c_ != '\n') {
-                    for (int i = 0; i <= space_count; i++){
+                    for (int i = 0; i <= space_count; i++){ // if non-space met puts all chars back in stream
                         input_.unget();
                     }
                     return;
-                } else if (c_ == '\n') {
+                } else if (c_ == '\n') { // if next line char met starts checkup new line with space_count set to 0
                     space_count = 0;
                 } else {
                     space_count++;
@@ -112,10 +113,10 @@ namespace parse {
     }
 
     Token Lexer::ParseNextToken() {
-        if (c_ == '#') {
+        if (c_ == '#') { // if next token position starts with comment
             RemoveComment();
             if (!CurrentToken().Is<token_type::Newline>()) {
-                doc_.emplace_back(token_type::Newline{});
+                doc_.emplace_back(token_type::Newline{}); // if token position wasn't a new line then new line lexeme
                 return doc_.at(doc_.size() - 1);
             }
         } else if (c_ == '\n'){
@@ -123,11 +124,11 @@ namespace parse {
             return doc_.at(doc_.size() - 1);
         }
         if (c_ == '=' || c_ == '!' || c_ == '<' || c_ == '>') { return GetEqLexeme(); } // Get of %%%%% parses =, !, <, >, ==, !=, <=, >=,
-        if (lang_chars.count(c_) > 0) { return GetCharLexeme(); } // Get of %%%%% parses =, !, <, >, ==, !=, <=, >=
+        if (marks_chars.count(c_) > 0 || c_ == '.') { return GetCharLexeme(); } // Get of %%%%% parses =, !, <, >, ==, !=, <=, >=
         if (c_ == '\'' || c_ == '\"') { return GetStringLexeme(); }  // Get of %%%%% get string lexeme
         if (isdigit(c_)) {return GetNumberLexeme();} // Get of %%%%% get number lexeme
         if (c_ == 95 || (c_ > 64 && c_ < 91) || (c_ > 96 && c_ < 123)) {return GetIdOrKeyLexeme();} // Get of %%%%% get id lexeme
-        if (c_ == ' ') {throw LexerError("ParseNextToken(): FLAG error-- "s);}
+        if (c_ == ' ') {throw LexerError("ParseNextToken(): FLAG error-- whitespace in ParseNextToken"s);}
         throw LexerError("ParseNextToken(): Unknown error-- "s + c_);
     }
 
@@ -140,29 +141,31 @@ namespace parse {
             RemoveEmptyLines();
         }
         if (input_.get(c_)){
-            if (c_ == ' ' && CurrentToken().Is<token_type::Newline>()) {
+            if (c_ == ' ' && (CurrentToken().Is<token_type::Newline>() || CurrentToken().Is<token_type::Dedent>())) {
                 if (IsIndentLexeme()) { return doc_.at(doc_.size() - 1); }
-            } else if (c_ != ' ' && last_indent_ > 0 && (CurrentToken().Is<token_type::Newline>() || dedent_chain_)) {
-                dedent_chain_ = true;
+            } else if (c_ != ' ' && last_indent_ > 0 && (CurrentToken().Is<token_type::Newline>() || is_dedent_chain_)) { // if no spaces - gets all dedent one by one until last_indent_ == 0, is_dedent_chain_ marks this loop
+                is_dedent_chain_ = true;
                 input_.unget();
                 last_indent_--;
                 doc_.emplace_back(token_type::Dedent{});
                 return doc_.at(doc_.size() - 1);
             }
-            dedent_chain_ = false;
+            is_dedent_chain_ = false;
             return ParseNextToken();
         } else {
             if (last_indent_ > 0) {
-                last_indent_--;
-                doc_.emplace_back(token_type::Dedent{});
+                if (!CurrentToken().Is<token_type::Newline>() && !CurrentToken().Is<token_type::Dedent>()){
+                    doc_.emplace_back(token_type::Newline{});
+                } else {
+                    last_indent_--;
+                    doc_.emplace_back(token_type::Dedent{});
+                }
                 return doc_.at(doc_.size() - 1);
             }
             if (!doc_.empty()){
                 if (!CurrentToken().Is<token_type::Newline>() && !CurrentToken().Is<token_type::Eof>() && !CurrentToken().Is<token_type::Dedent>()){
                     doc_.emplace_back(token_type::Newline{});
-                    return doc_.at(doc_.size() - 1);
-                }
-                if (!std::holds_alternative<token_type::Eof>(doc_.at(doc_.size() - 1))){
+                } else if (!std::holds_alternative<token_type::Eof>(doc_.at(doc_.size() - 1))){
                     doc_.emplace_back(token_type::Eof{});
                 }
             } else {
@@ -215,9 +218,9 @@ namespace parse {
             } else if (c_ == '\n') {
                 throw LexerError("GetStringLexeme(): Wrong string format"s);
             } else {
-                    doc_.emplace_back(token_type::String{string_lexeme});
-                    RemoveSpaces();
-                    return doc_.at(doc_.size() - 1);
+                doc_.emplace_back(token_type::String{string_lexeme});
+                RemoveSpaces();
+                return doc_.at(doc_.size() - 1);
             }
         }
         throw LexerError("GetStringLexeme(): Wrong string format"s);
@@ -227,7 +230,7 @@ namespace parse {
         string number_lexeme;
         number_lexeme.push_back(c_);
         while (input_.get(c_)) {
-            if (c_ != ' ' && c_ != '#' && c_ != '\n' && marks_chars.count(c_) == 0) {
+            if (c_ != ' ' && c_ != '#' && c_ != '\n' && marks_chars.count(c_) == 0) { // while condition is getting the lexeme
                 if (isdigit(c_)) {
                     number_lexeme.push_back(c_);
                 }
@@ -248,7 +251,7 @@ namespace parse {
         string str_lexeme;
         str_lexeme.push_back(c_);
         while (input_.get(c_)){
-            if (c_ != ' ' && c_ != '#' && c_ != '\n' && lang_chars.count(c_) == 0){
+            if (c_ != ' ' && c_ != '#' && c_ != '\n' && c_ != '.' && marks_chars.count(c_) == 0){ // while condition is getting the lexeme
                 str_lexeme.push_back(c_);
             } else {
                 input_.unget();
@@ -267,13 +270,13 @@ namespace parse {
         else if (str_lexeme == "None") { doc_.emplace_back(token_type::None{});}
         else if (str_lexeme == "True") { doc_.emplace_back(token_type::True{});}
         else if (str_lexeme == "False") { doc_.emplace_back(token_type::False{});}
-        else {doc_.emplace_back(token_type::Id{str_lexeme});}
-        RemoveSpaces();
+        else {doc_.emplace_back(token_type::Id{str_lexeme});} // if not a reserved word - get an ID lexeme with the value
+        RemoveSpaces(); // removes all spaces before next lexeme
         return doc_.at(doc_.size() - 1);
     }
 
-    bool Lexer::IsIndentLexeme() {
-        int indent_count = 1;
+    bool Lexer::IsIndentLexeme() { // returns true if indent/dedent occurred
+        int indent_count = 1; // the first space counted
         while (input_.get(c_)){
             if (c_ == ' ') {
                 indent_count++;
@@ -283,15 +286,15 @@ namespace parse {
                     return true;
                 }
             } else {
-                if (indent_count / 2 == last_indent_) {
+                if (indent_count / 2 == last_indent_) { // if char is not whitespace  - check if no dedent occurred
                     return false;
                 } else {
-                    if (indent_count / 2 + 1 != last_indent_){
-                        for (int i = 0; i < 2; i++) {
+                    if (indent_count / 2 + 1 != last_indent_){ // dedent occurred
+                        for (int i = 0; i < 2; i++) { // puts back two spaces to reduce spaces in line if dedent-chain
                             input_.unget();
                         }
                     }
-                    input_.unget();
+                    input_.unget(); // puts not-space-char back
                     last_indent_--;
                     doc_.emplace_back(token_type::Dedent{});
                     return true;

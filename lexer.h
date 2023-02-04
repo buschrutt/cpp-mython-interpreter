@@ -174,10 +174,9 @@ namespace parse {
         std::vector<Token> doc_;
         int last_indent_ = 0;
         std::unordered_map<std::string, int> var_values_;
-        std::set<char> lang_chars {'.', ',', '(', ')', '*', '/', '+', '-', ':', ';'};
         std::set<char> marks_chars {',', '(', ')', '*', '/', '+', '-', ':', ';'};
         std::string input_data_;
-        bool dedent_chain_ = false;
+        bool is_dedent_chain_ = false;
     };
 
 }  // namespace parse
