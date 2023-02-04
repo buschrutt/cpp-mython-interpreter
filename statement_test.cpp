@@ -38,14 +38,14 @@ void TestNumericConst() {
     Closure empty;
 
     ObjectHolder o = num.Execute(empty, context);
-    ASSERT(o);
-    ASSERT(empty.empty());
+    ASSERT(o)
+    ASSERT(empty.empty())
 
     ostringstream os;
     o->Print(os, context);
-    ASSERT_EQUAL(os.str(), "57"s);
+    ASSERT_EQUAL(os.str(), "57"s)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestStringConst() {
@@ -55,14 +55,14 @@ void TestStringConst() {
     Closure empty;
 
     ObjectHolder o = value_.Execute(empty, context);
-    ASSERT(o);
-    ASSERT(empty.empty());
+    ASSERT(o)
+    ASSERT(empty.empty())
 
     ostringstream os;
     o->Print(os, context);
-    ASSERT_EQUAL(os.str(), "Hello!"s);
+    ASSERT_EQUAL(os.str(), "Hello!"s)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestVariable() {
@@ -72,11 +72,11 @@ void TestVariable() {
     runtime::String word("Hello"s);
 
     Closure closure = {{"x"s, ObjectHolder::Share(num)}, {"w"s, ObjectHolder::Share(word)}};
-    ASSERT(VariableValue("x"s).Execute(closure, context).Get() == &num);
-    ASSERT(VariableValue("w"s).Execute(closure, context).Get() == &word);
-    ASSERT_THROWS(VariableValue("unknown"s).Execute(closure, context), std::runtime_error);
+    ASSERT(VariableValue("x"s).Execute(closure, context).Get() == &num)
+    ASSERT(VariableValue("w"s).Execute(closure, context).Get() == &word)
+    ASSERT_THROWS(VariableValue("unknown"s).Execute(closure, context), std::runtime_error)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestAssignment() {
@@ -89,21 +89,21 @@ void TestAssignment() {
 
     {
         ObjectHolder o = assign_x.Execute(closure, context);
-        ASSERT(o);
-        ASSERT_OBJECT_VALUE_EQUAL(o, 57);
+        ASSERT(o)
+        ASSERT_OBJECT_VALUE_EQUAL(o, 57)
     }
-    ASSERT(closure.find("x"s) != closure.end());
-    ASSERT_OBJECT_VALUE_EQUAL(closure.at("x"s), 57);
+    ASSERT(closure.find("x"s) != closure.end())
+    ASSERT_OBJECT_VALUE_EQUAL(closure.at("x"s), 57)
 
     {
         ObjectHolder o = assign_y.Execute(closure, context);
-        ASSERT(o);
-        ASSERT_OBJECT_VALUE_EQUAL(o, "Hello"s);
+        ASSERT(o)
+        ASSERT_OBJECT_VALUE_EQUAL(o, "Hello"s)
     }
-    ASSERT(closure.find("y"s) != closure.end());
-    ASSERT_OBJECT_VALUE_EQUAL(closure.at("y"s), "Hello"s);
+    ASSERT(closure.find("y"s) != closure.end())
+    ASSERT_OBJECT_VALUE_EQUAL(closure.at("y"s), "Hello"s)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestFieldAssignment() {
@@ -120,11 +120,11 @@ void TestFieldAssignment() {
 
     {
         ObjectHolder o = assign_x.Execute(closure, context);
-        ASSERT(o);
-        ASSERT_OBJECT_VALUE_EQUAL(o, 57);
+        ASSERT(o)
+        ASSERT_OBJECT_VALUE_EQUAL(o, 57)
     }
-    ASSERT(object.Fields().find("x"s) != object.Fields().end());
-    ASSERT_OBJECT_VALUE_EQUAL(object.Fields().at("x"s), 57);
+    ASSERT(object.Fields().find("x"s) != object.Fields().end())
+    ASSERT_OBJECT_VALUE_EQUAL(object.Fields().at("x"s), 57)
 
     assign_y.Execute(closure, context);
     FieldAssignment assign_yz(
@@ -132,16 +132,16 @@ void TestFieldAssignment() {
         make_unique<StringConst>(runtime::String("Hello, world! Hooray! Yes-yes!!!"s)));
     {
         ObjectHolder o = assign_yz.Execute(closure, context);
-        ASSERT(o);
-        ASSERT_OBJECT_VALUE_EQUAL(o, "Hello, world! Hooray! Yes-yes!!!"s);
+        ASSERT(o)
+        ASSERT_OBJECT_VALUE_EQUAL(o, "Hello, world! Hooray! Yes-yes!!!"s)
     }
 
-    ASSERT(object.Fields().find("y"s) != object.Fields().end());
+    ASSERT(object.Fields().find("y"s) != object.Fields().end())
     const auto* subobject = object.Fields().at("y"s).TryAs<runtime::ClassInstance>();
-    ASSERT(subobject != nullptr && subobject->Fields().find("z"s) != subobject->Fields().end());
-    ASSERT_OBJECT_VALUE_EQUAL(subobject->Fields().at("z"s), "Hello, world! Hooray! Yes-yes!!!"s);
+    ASSERT(subobject != nullptr && subobject->Fields().find("z"s) != subobject->Fields().end())
+    ASSERT_OBJECT_VALUE_EQUAL(subobject->Fields().at("z"s), "Hello, world! Hooray! Yes-yes!!!"s)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestPrintVariable() {
@@ -152,7 +152,7 @@ void TestPrintVariable() {
     auto print_statement = Print::Variable("y"s);
     print_statement->Execute(closure, context);
 
-    ASSERT_EQUAL(context.output.str(), "42\n"s);
+    ASSERT_EQUAL(context.output.str(), "42\n"s)
 }
 
 void TestPrintMultipleStatements() {
@@ -169,7 +169,7 @@ void TestPrintMultipleStatements() {
 
     Print(std::move(args)).Execute(closure, context);
 
-    ASSERT_EQUAL(context.output.str(), "hello 57 Python None\n"s);
+    ASSERT_EQUAL(context.output.str(), "hello 57 Python None\n"s)
 }
 
 void TestStringify() {
@@ -179,13 +179,13 @@ void TestStringify() {
 
     {
         auto result = Stringify(make_unique<NumericConst>(57)).Execute(empty, context);
-        ASSERT_OBJECT_VALUE_EQUAL(result, "57"s);
-        ASSERT(result.TryAs<runtime::String>());
+        ASSERT_OBJECT_VALUE_EQUAL(result, "57"s)
+        ASSERT(result.TryAs<runtime::String>())
     }
     {
         auto result = Stringify(make_unique<StringConst>("Wazzup!"s)).Execute(empty, context);
-        ASSERT_OBJECT_VALUE_EQUAL(result, "Wazzup!"s);
-        ASSERT(result.TryAs<runtime::String>());
+        ASSERT_OBJECT_VALUE_EQUAL(result, "Wazzup!"s)
+        ASSERT(result.TryAs<runtime::String>())
     }
     {
         vector<runtime::Method> methods;
@@ -194,8 +194,8 @@ void TestStringify() {
         runtime::Class cls("BoxedValue"s, std::move(methods), nullptr);
 
         auto result = Stringify(make_unique<NewInstance>(cls)).Execute(empty, context);
-        ASSERT_OBJECT_VALUE_EQUAL(result, "842"s);
-        ASSERT(result.TryAs<runtime::String>());
+        ASSERT_OBJECT_VALUE_EQUAL(result, "842"s)
+        ASSERT(result.TryAs<runtime::String>())
     }
     {
         runtime::Class cls("BoxedValue"s, {}, nullptr);
@@ -205,14 +205,14 @@ void TestStringify() {
         expected_output << closure.at("x"s).Get();
 
         Stringify str(make_unique<VariableValue>("x"s));
-        ASSERT_OBJECT_VALUE_EQUAL(str.Execute(closure, context), expected_output.str());
+        ASSERT_OBJECT_VALUE_EQUAL(str.Execute(closure, context), expected_output.str())
     }
     {
         Stringify str(make_unique<None>());
-        ASSERT_OBJECT_VALUE_EQUAL(str.Execute(empty, context), "None"s);
+        ASSERT_OBJECT_VALUE_EQUAL(str.Execute(empty, context), "None"s)
     }
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestNumbersAddition() {
@@ -221,9 +221,9 @@ void TestNumbersAddition() {
     Add sum(make_unique<NumericConst>(23), make_unique<NumericConst>(34));
 
     Closure empty;
-    ASSERT_OBJECT_VALUE_EQUAL(sum.Execute(empty, context), 57);
+    ASSERT_OBJECT_VALUE_EQUAL(sum.Execute(empty, context), 57)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestStringsAddition() {
@@ -232,9 +232,9 @@ void TestStringsAddition() {
     Add sum(make_unique<StringConst>("23"s), make_unique<StringConst>("34"s));
 
     Closure empty;
-    ASSERT_OBJECT_VALUE_EQUAL(sum.Execute(empty, context), "2334"s);
+    ASSERT_OBJECT_VALUE_EQUAL(sum.Execute(empty, context), "2334"s)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestBadAddition() {
@@ -244,16 +244,16 @@ void TestBadAddition() {
 
     ASSERT_THROWS(
         Add(make_unique<NumericConst>(42), make_unique<StringConst>("4"s)).Execute(empty, context),
-        std::runtime_error);
+        std::runtime_error)
     ASSERT_THROWS(
         Add(make_unique<StringConst>("4"s), make_unique<NumericConst>(42)).Execute(empty, context),
-        std::runtime_error);
+        std::runtime_error)
     ASSERT_THROWS(Add(make_unique<None>(), make_unique<StringConst>("4"s)).Execute(empty, context),
-                  std::runtime_error);
+                  std::runtime_error)
     ASSERT_THROWS(Add(make_unique<None>(), make_unique<None>()).Execute(empty, context),
-                  std::runtime_error);
+                  std::runtime_error)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestSuccessfulClassInstanceAdd() {
@@ -270,9 +270,9 @@ void TestSuccessfulClassInstanceAdd() {
     Closure empty;
     auto result = Add(make_unique<NewInstance>(cls), make_unique<StringConst>("world"s))
                       .Execute(empty, context);
-    ASSERT_OBJECT_VALUE_EQUAL(result, "hello, world"s);
+    ASSERT_OBJECT_VALUE_EQUAL(result, "hello, world"s)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestClassInstanceAddWithoutMethod() {
@@ -282,9 +282,9 @@ void TestClassInstanceAddWithoutMethod() {
 
     Closure empty;
     Add addition(make_unique<NewInstance>(cls), make_unique<StringConst>("world"s));
-    ASSERT_THROWS(addition.Execute(empty, context), std::runtime_error);
+    ASSERT_THROWS(addition.Execute(empty, context), std::runtime_error)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestCompound() {
@@ -299,13 +299,13 @@ void TestCompound() {
     Closure closure;
     auto result = cpd.Execute(closure, context);
 
-    ASSERT_OBJECT_VALUE_EQUAL(closure.at("x"s), "one"s);
-    ASSERT_OBJECT_VALUE_EQUAL(closure.at("y"s), 2);
-    ASSERT_OBJECT_VALUE_EQUAL(closure.at("z"s), "one"s);
+    ASSERT_OBJECT_VALUE_EQUAL(closure.at("x"s), "one"s)
+    ASSERT_OBJECT_VALUE_EQUAL(closure.at("y"s), 2)
+    ASSERT_OBJECT_VALUE_EQUAL(closure.at("z"s), "one"s)
 
-    ASSERT(!result);
+    ASSERT(!result)
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestFields() {
@@ -335,13 +335,13 @@ void TestFields() {
     for (int i = 1, expected = 0; i < 10; expected += i, ++i) {
         auto fv = inst.Call("value"s, {}, context);
         auto* obj = fv.TryAs<runtime::Number>();
-        ASSERT(obj);
-        ASSERT_EQUAL(obj->GetValue(), expected);
+        ASSERT(obj)
+        ASSERT_EQUAL(obj->GetValue(), expected)
 
         inst.Call("add"s, {ObjectHolder::Own(runtime::Number(i))}, context);
     }
 
-    ASSERT(context.output.str().empty());
+    ASSERT(context.output.str().empty())
 }
 
 void TestBaseClass() {
@@ -354,20 +354,20 @@ void TestBaseClass() {
 
     runtime::Class cls("BoxedValue"s, move(methods), nullptr);
 
-    ASSERT_EQUAL(cls.GetName(), "BoxedValue"s);
+    ASSERT_EQUAL(cls.GetName(), "BoxedValue"s)
     {
         const auto* m = cls.GetMethod("GetValue"s);
-        ASSERT(m != nullptr);
-        ASSERT_EQUAL(m->name, "GetValue"s);
-        ASSERT(m->formal_params.empty());
+        ASSERT(m != nullptr)
+        ASSERT_EQUAL(m->name, "GetValue"s)
+        ASSERT(m->formal_params.empty())
     }
     {
         const auto* m = cls.GetMethod("SetValue"s);
-        ASSERT(m != nullptr);
-        ASSERT_EQUAL(m->name, "SetValue"s);
-        ASSERT_EQUAL(m->formal_params.size(), 1U);
+        ASSERT(m != nullptr)
+        ASSERT_EQUAL(m->name, "SetValue"s)
+        ASSERT_EQUAL(m->formal_params.size(), 1U)
     }
-    ASSERT(!cls.GetMethod("AsString"s));
+    ASSERT(!cls.GetMethod("AsString"s))
 }
 
 void TestInheritance() {
@@ -385,26 +385,26 @@ void TestInheritance() {
     methods.push_back({"AsString"s, {}, make_unique<StringConst>("value"s)});
     runtime::Class cls("StringableValue"s, std::move(methods), &base);
 
-    ASSERT_EQUAL(cls.GetName(), "StringableValue"s);
+    ASSERT_EQUAL(cls.GetName(), "StringableValue"s)
     {
         const auto* m = cls.GetMethod("GetValue"s);
-        ASSERT(m != nullptr);
-        ASSERT_EQUAL(m->name, "GetValue"s);
-        ASSERT_EQUAL(m->formal_params.size(), 1U);
+        ASSERT(m != nullptr)
+        ASSERT_EQUAL(m->name, "GetValue"s)
+        ASSERT_EQUAL(m->formal_params.size(), 1U)
     }
     {
         const auto* m = cls.GetMethod("SetValue"s);
-        ASSERT(m != nullptr);
-        ASSERT_EQUAL(m->name, "SetValue"s);
-        ASSERT_EQUAL(m->formal_params.size(), 1U);
+        ASSERT(m != nullptr)
+        ASSERT_EQUAL(m->name, "SetValue"s)
+        ASSERT_EQUAL(m->formal_params.size(), 1U)
     }
     {
         const auto* m = cls.GetMethod("AsString"s);
-        ASSERT(m != nullptr);
-        ASSERT_EQUAL(m->name, "AsString"s);
-        ASSERT(m->formal_params.empty());
+        ASSERT(m != nullptr)
+        ASSERT_EQUAL(m->name, "AsString"s)
+        ASSERT(m->formal_params.empty())
     }
-    ASSERT(!cls.GetMethod("AsStringValue"s));
+    ASSERT(!cls.GetMethod("AsStringValue"s))
 }
 
 void TestOr() {
@@ -414,7 +414,7 @@ void TestOr() {
         runtime::DummyContext context;
         ASSERT_EQUAL(runtime::Equal(or_statement.Execute(closure, context),
                                     ObjectHolder::Own(runtime::Bool(true)), context),
-                     lhs || rhs);
+                     lhs || rhs)
     };
 
     test_or(true, true);
@@ -430,7 +430,7 @@ void TestAnd() {
         runtime::DummyContext context;
         ASSERT_EQUAL(runtime::Equal(and_statement.Execute(closure, context),
                                     ObjectHolder::Own(runtime::Bool(true)), context),
-                     lhs && rhs);
+                     lhs && rhs)
     };
 
     test_and(true, true);
@@ -446,7 +446,7 @@ void TestNot() {
         runtime::DummyContext context;
         ASSERT_EQUAL(runtime::Equal(not_statement.Execute(closure, context),
                                     ObjectHolder::Own(runtime::Bool(true)), context),
-                     !arg);
+                     !arg)
     };
 
     test_not(true);
@@ -458,6 +458,7 @@ void TestNot() {
 void RunUnitTests(TestRunner& tr) {
     RUN_TEST(tr, ast::TestNumericConst);
     RUN_TEST(tr, ast::TestStringConst);
+
     RUN_TEST(tr, ast::TestVariable);
     RUN_TEST(tr, ast::TestAssignment);
     RUN_TEST(tr, ast::TestFieldAssignment);

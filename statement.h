@@ -6,42 +6,35 @@
 
 namespace ast {
 
-using Statement = runtime::Executable;
+    using Statement = runtime::Executable;
 
-// Выражение, возвращающее значение типа T,
-// используется как основа для создания констант
-template <typename T>
-class ValueStatement : public Statement {
-public:
-    explicit ValueStatement(T v)
-        : value_(std::move(v)) {
-    }
+    // Returns value of T, is used as constant creation base
+    template <typename T>
+    class ValueStatement : public Statement {
+    public:
+        explicit ValueStatement(T v): value_(std::move(v)) { }
 
-    runtime::ObjectHolder Execute(runtime::Closure& /*closure*/,
-                                  runtime::Context& /*context*/) override {
-        return runtime::ObjectHolder::Share(value_);
-    }
+        runtime::ObjectHolder Execute(runtime::Closure& closure, runtime::Context& context) override {
+            return runtime::ObjectHolder::Share(value_);
+        }
 
-private:
-    T value_;
-};
+    private:
+        T value_;
+    };
 
-using NumericConst = ValueStatement<runtime::Number>;
-using StringConst = ValueStatement<runtime::String>;
-using BoolConst = ValueStatement<runtime::Bool>;
+    using NumericConst = ValueStatement<runtime::Number>;
+    using StringConst = ValueStatement<runtime::String>;
+    using BoolConst = ValueStatement<runtime::Bool>;
 
-/*
-Вычисляет значение переменной либо цепочки вызовов полей объектов id1.id2.id3.
-Например, выражение circle.center.x - цепочка вызовов полей объектов в инструкции:
-x = circle.center.x
-*/
-class VariableValue : public Statement {
-public:
-    explicit VariableValue(const std::string& var_name);
-    explicit VariableValue(std::vector<std::string> dotted_ids);
+    // Calculates the value of any chain of object field calls: id1.id2.id3.
+    // An example circle.center.x - object field call chain in instruction: x = circle.center.x
+    class VariableValue : public Statement {
+    public:
+        explicit VariableValue(const std::string& var_name);
+        explicit VariableValue(std::vector<std::string> dotted_ids);
 
-    runtime::ObjectHolder Execute(runtime::Closure& closure, runtime::Context& context) override;
-};
+        runtime::ObjectHolder Execute(runtime::Closure& closure, runtime::Context& context) override;
+    };
 
 // Присваивает переменной, имя которой задано в параметре var, значение выражения rv
 class Assignment : public Statement {
