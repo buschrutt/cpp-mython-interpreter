@@ -458,7 +458,6 @@ void TestNot() {
 void RunUnitTests(TestRunner& tr) {
     RUN_TEST(tr, ast::TestNumericConst);
     RUN_TEST(tr, ast::TestStringConst);
-
     RUN_TEST(tr, ast::TestVariable);
     RUN_TEST(tr, ast::TestAssignment);
     RUN_TEST(tr, ast::TestFieldAssignment);
@@ -477,6 +476,7 @@ void RunUnitTests(TestRunner& tr) {
     RUN_TEST(tr, ast::TestOr);
     RUN_TEST(tr, ast::TestAnd);
     RUN_TEST(tr, ast::TestNot);
+
 }
 
 }  // namespace ast
