@@ -28,13 +28,13 @@ namespace ast {
 
     VariableValue::VariableValue(std::vector<std::string>  dotted_ids): dotted_ids_(std::move(dotted_ids)) {}
 
-    ObjectHolder VariableValue::Execute(Closure& closure, Context& context) {
+    ObjectHolder VariableValue::Execute(Closure& closure, [[maybe_unused]] Context& context) {
         Closure* local_closer = &closure;
         auto itr_runner = closure.begin();
         for (const auto& val : dotted_ids_) {
             itr_runner = local_closer->find(val);
             if (itr_runner == local_closer->end()) {
-                throw std::runtime_error("runtime_error VariableValue::Execute()");
+                throw std::runtime_error("VariableValue::Execute() --runtime_error");
             }
             auto cls = itr_runner->second.TryAs<runtime::ClassInstance>();
             if (cls != nullptr) {
@@ -75,7 +75,7 @@ namespace ast {
     }
 
     MethodCall::MethodCall(std::unique_ptr<Statement> object, std::string method, std::vector<std::unique_ptr<Statement>> args):
-        object_(move(object)), method_(std::move(method)), args_(std::move(args)) {}
+            object_(move(object)), method_(std::move(method)), args_(std::move(args)) {}
 
     ObjectHolder MethodCall::Execute(Closure& closure, Context& context) {
         std::vector<runtime::ObjectHolder> actual_args;
@@ -86,22 +86,23 @@ namespace ast {
     }
 
     ObjectHolder Stringify::Execute(Closure& closure, Context& context) {
-        auto arg = argument_->Execute(closure, context);
-        if (!arg.operator bool()) {return ObjectHolder::Own(runtime::String{ "None"s });}
-        std::ostringstream for_print;
-        arg->Print(for_print, context);
-        return ObjectHolder::Own(runtime::String{ for_print.str() });
-        //return argument_->Execute(closure, context);
+        auto object_holder = argument_->Execute(closure, context);
+        if (!object_holder.operator bool()) { // doesn't has a value
+            return ObjectHolder::Own(runtime::String{ "None"s });
+        }
+        std::ostringstream output;
+        object_holder->Print(output, context);
+        return ObjectHolder::Own(runtime::String{output.str()});
     }
 
     ObjectHolder Add::Execute(Closure& closure, Context& context) {
-        auto obj_lhs = lhs_->Execute(closure, context);
-        auto obj_rhs = rhs_->Execute(closure, context);
-        if (obj_lhs.TryAs<runtime::Number>() != nullptr && obj_rhs.TryAs<runtime::Number>() != nullptr) {
-            return ObjectHolder::Own(runtime::Number(obj_lhs.TryAs<runtime::Number>()->GetValue() + obj_rhs.TryAs<runtime::Number>()->GetValue()));
+        auto holder_lhs = lhs_->Execute(closure, context);
+        auto holder_rhs = rhs_->Execute(closure, context);
+        if (holder_lhs.TryAs<runtime::Number>() != nullptr && holder_rhs.TryAs<runtime::Number>() != nullptr) {
+            return ObjectHolder::Own(runtime::Number(holder_lhs.TryAs<runtime::Number>()->GetValue() + holder_rhs.TryAs<runtime::Number>()->GetValue()));
         }
-        if (obj_lhs.TryAs<runtime::String>() != nullptr && obj_rhs.TryAs<runtime::String>() != nullptr) {
-            return ObjectHolder::Own(runtime::String(obj_lhs.TryAs<runtime::String>()->GetValue() + obj_rhs.TryAs<runtime::String>()->GetValue()));
+        if (holder_lhs.TryAs<runtime::String>() != nullptr && holder_rhs.TryAs<runtime::String>() != nullptr) {
+            return ObjectHolder::Own(runtime::String(holder_lhs.TryAs<runtime::String>()->GetValue() + holder_rhs.TryAs<runtime::String>()->GetValue()));
         }
         if (lhs_->Execute(closure, context).TryAs<runtime::ClassInstance>() != nullptr) {
             if (lhs_->Execute(closure, context).TryAs<runtime::ClassInstance>()->HasMethod(ADD_METHOD, 1)) {
@@ -112,29 +113,29 @@ namespace ast {
     }
 
     ObjectHolder Sub::Execute(Closure& closure, Context& context) {
-        auto obj_lhs = lhs_->Execute(closure, context);
-        auto obj_rhs = rhs_->Execute(closure, context);
-        if (obj_lhs.TryAs<runtime::Number>() != nullptr && obj_rhs.TryAs<runtime::Number>() != nullptr) {
-            return ObjectHolder::Own(runtime::Number(obj_lhs.TryAs<runtime::Number>()->GetValue() - obj_rhs.TryAs<runtime::Number>()->GetValue()));
+        auto holder_lhs = lhs_->Execute(closure, context);
+        auto holder_rhs = rhs_->Execute(closure, context);
+        if (holder_lhs.TryAs<runtime::Number>() != nullptr && holder_rhs.TryAs<runtime::Number>() != nullptr) {
+            return ObjectHolder::Own(runtime::Number(holder_lhs.TryAs<runtime::Number>()->GetValue() - holder_rhs.TryAs<runtime::Number>()->GetValue()));
         }
         throw std::runtime_error("Execute(): SUB --runtime_error"s);
     }
 
     ObjectHolder Mult::Execute(Closure& closure, Context& context) {
-        auto obj_lhs = lhs_->Execute(closure, context);
-        auto obj_rhs = rhs_->Execute(closure, context);
-        if (obj_lhs.TryAs<runtime::Number>() != nullptr && obj_rhs.TryAs<runtime::Number>() != nullptr) {
-            return ObjectHolder::Own(runtime::Number(obj_lhs.TryAs<runtime::Number>()->GetValue() * obj_rhs.TryAs<runtime::Number>()->GetValue()));
+        auto holder_lhs = lhs_->Execute(closure, context);
+        auto holder_rhs = rhs_->Execute(closure, context);
+        if (holder_lhs.TryAs<runtime::Number>() != nullptr && holder_rhs.TryAs<runtime::Number>() != nullptr) {
+            return ObjectHolder::Own(runtime::Number(holder_lhs.TryAs<runtime::Number>()->GetValue() * holder_rhs.TryAs<runtime::Number>()->GetValue()));
         }
         throw std::runtime_error("Execute(): MULT --runtime_error"s);
     }
 
     ObjectHolder Div::Execute(Closure& closure, Context& context) {
-        auto obj_lhs = lhs_->Execute(closure, context);
-        auto obj_rhs = rhs_->Execute(closure, context);
-        if (obj_lhs.TryAs<runtime::Number>() != nullptr && obj_rhs.TryAs<runtime::Number>() != nullptr) {
-            if (obj_rhs.TryAs<runtime::Number>() != nullptr){ //??
-                return ObjectHolder::Own(runtime::Number(obj_lhs.TryAs<runtime::Number>()->GetValue() / obj_rhs.TryAs<runtime::Number>()->GetValue()));
+        auto holder_lhs = lhs_->Execute(closure, context);
+        auto holder_rhs = rhs_->Execute(closure, context);
+        if (holder_lhs.TryAs<runtime::Number>() != nullptr && holder_rhs.TryAs<runtime::Number>() != nullptr) {
+            if (holder_rhs.TryAs<runtime::Number>() != nullptr){ //??
+                return ObjectHolder::Own(runtime::Number(holder_lhs.TryAs<runtime::Number>()->GetValue() / holder_rhs.TryAs<runtime::Number>()->GetValue()));
             } else {
                 throw std::runtime_error("Execute(): DIV --runtime_error --division by zero"s);
             }
@@ -150,26 +151,24 @@ namespace ast {
     }
 
     ObjectHolder Return::Execute(Closure& closure, Context& context) {
-        throw statement_->Execute(closure, context);
+        throw runtime::ObjectHolder(statement_->Execute(closure, context));
     }
 
     ClassDefinition::ClassDefinition(ObjectHolder cls): cls_(std::move(cls)) {}
 
-    ObjectHolder ClassDefinition::Execute(Closure& closure, Context& context) {
-        closure[cls_.TryAs<runtime::Class>()->GetName()] = std::move(cls_);
-        return closure[cls_.TryAs<runtime::Class>()->GetName()];
+    ObjectHolder ClassDefinition::Execute(Closure& closure, [[maybe_unused]] Context& context) {
+        return closure[cls_.TryAs<runtime::Class>()->GetName()] = std::move(cls_);
     }
 
     FieldAssignment::FieldAssignment(VariableValue object, std::string field_name, std::unique_ptr<Statement> rv):
-    object_(std::move(object)), field_name_(std::move(field_name)), rv_(std::move(rv)){}
+            object_(std::move(object)), field_name_(std::move(field_name)), rv_(std::move(rv)){}
 
     ObjectHolder FieldAssignment::Execute(Closure& closure, Context& context) {
-        int a = 1;
         return object_.Execute(closure, context).TryAs<runtime::ClassInstance>()->Fields()[field_name_] = std::move(rv_->Execute(closure, context));
     }
 
     IfElse::IfElse(std::unique_ptr<Statement> condition, std::unique_ptr<Statement> if_body, std::unique_ptr<Statement> else_body):
-    condition_(std::move(condition)), if_body_(std::move(if_body)), else_body_(std::move(else_body)) {}
+            condition_(std::move(condition)), if_body_(std::move(if_body)), else_body_(std::move(else_body)) {}
 
     ObjectHolder IfElse::Execute(Closure& closure, Context& context) {
         if (runtime::IsTrue(condition_->Execute(closure, context))) {
@@ -199,7 +198,7 @@ namespace ast {
     }
 
     Comparison::Comparison(Comparator cmp, unique_ptr<Statement> lhs, unique_ptr<Statement> rhs):
-    cmp_(std::move(cmp)), BinaryOperation(std::move(lhs), std::move(rhs)) {}
+            BinaryOperation(std::move(lhs), std::move(rhs)), cmp_(std::move(cmp)) {}
 
     ObjectHolder Comparison::Execute(Closure& closure, Context& context) {
         bool result = cmp_(lhs_->Execute(closure, context), rhs_->Execute(closure, context), context);
@@ -207,7 +206,7 @@ namespace ast {
     }
 
     NewInstance::NewInstance(const runtime::Class& class_, std::vector<std::unique_ptr<Statement>> args):
-    class_instance_(class_), args_(std::move(args)){}
+            class_instance_(class_), args_(std::move(args)){}
 
     NewInstance::NewInstance(const runtime::Class& class_): class_instance_(class_) {}
 
@@ -227,9 +226,8 @@ namespace ast {
     ObjectHolder MethodBody::Execute(Closure& closure, Context& context) {
         try {
             body_->Execute(closure, context);
-        }
-        catch (runtime::ObjectHolder obj) {
-            return obj;
+        } catch (runtime::ObjectHolder& object_holder) {
+            return object_holder;
         }
         return {};
     }

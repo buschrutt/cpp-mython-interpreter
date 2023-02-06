@@ -124,13 +124,15 @@ void TestAll() {
     RUN_TEST(tr, TestAssignments);
     RUN_TEST(tr, TestArithmetics);
 
-
     RUN_TEST(tr, TestVariablesArePointers);
 }
 
 }  // namespace
 
 int main() {
+
+    std::cout << "FLAG-- \n \n" << std::endl;
+
     try {
         TestAll();
         RunMythonProgram(cin, cout);

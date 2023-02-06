@@ -14,7 +14,7 @@ namespace ast {
     public:
         explicit ValueStatement(T v): value_(std::move(v)) { }
 
-        runtime::ObjectHolder Execute(runtime::Closure& closure, runtime::Context& context) override {
+        runtime::ObjectHolder Execute([[maybe_unused]] runtime::Closure& closure, [[maybe_unused]] runtime::Context& context) override {
             return runtime::ObjectHolder::Share(value_);
         }
 
@@ -141,12 +141,13 @@ namespace ast {
 
     // Parent class Binary operation with lhs & rhs args
     class BinaryOperation : public Statement {
+    public:
+        BinaryOperation(std::unique_ptr<Statement> lhs, std::unique_ptr<Statement> rhs):
+        lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+
     protected:
         std::unique_ptr<Statement> lhs_;
         std::unique_ptr<Statement> rhs_;
-    public:
-        BinaryOperation(std::unique_ptr<Statement> lhs, std::unique_ptr<Statement> rhs):
-        rhs_(std::move(rhs)), lhs_(std::move(lhs))  {}
     };
 
     // Returns lhs and rhs + result
@@ -225,8 +226,6 @@ namespace ast {
 
         // Adds next instruction to the query of compound instruction
         void AddStatement(std::unique_ptr<Statement> stmt) {
-            //auto a = std::move(stmt);
-            //stmt = std::move(a);
             args_.push_back(std::move(stmt));
         }
 
