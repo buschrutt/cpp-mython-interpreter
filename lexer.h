@@ -146,12 +146,10 @@ namespace parse {
         template <typename T>
         const T& ExpectNext() {
             using namespace std::literals;
-            Token token = NextToken();
-            if (token.Is<T>()){
-                return token.As<T>();
-            } else {
-                throw LexerError("ExpectNext(): Wrong next token type"s);
+            if (NextToken().Is<T>()){
+                return CurrentToken().As<T>();
             }
+            throw LexerError("ExpectNext(): Wrong next token type"s);
         }
 
         // If next token has type T and a value, method returns its pointer
@@ -159,9 +157,8 @@ namespace parse {
         template <typename T, typename U>
         void ExpectNext(const U& value) {
             using namespace std::literals;
-            Token token = NextToken();
-            if (token.Is<T>()){
-                if (token.As<T>().value != value){
+            if (NextToken().Is<T>()){
+                if (CurrentToken().As<T>().value != value){
                     throw LexerError("ExpectNext(): Wrong next token type or value"s);
                 }
             }
