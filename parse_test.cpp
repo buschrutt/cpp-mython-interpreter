@@ -269,7 +269,6 @@ x = X(xh)
 }  // namespace parse
 
 void TestParseProgram(TestRunner& tr) {
-
     RUN_TEST(tr, parse::TestSimpleProgram);
     RUN_TEST(tr, parse::TestProgramWithClasses);
     RUN_TEST(tr, parse::TestProgramWithIf);
@@ -279,5 +278,4 @@ void TestParseProgram(TestRunner& tr) {
     RUN_TEST(tr, parse::TestComplexLogicalExpression);
     RUN_TEST(tr, parse::TestClassicalPolymorphism);
     RUN_TEST(tr, parse::TestSelfInConstructor);
-
 }

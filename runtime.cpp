@@ -4,6 +4,7 @@
 #include <optional>
 #include <sstream>
 #include <utility>
+#include <algorithm>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ namespace runtime {
 
     ObjectHolder ObjectHolder::Share(Object& object) {
         // Return shared_ptr (deleter does nothing)
-        return ObjectHolder(std::shared_ptr<Object>(&object, [](auto* /*p*/) { /* do nothing */ }));
+        return ObjectHolder(std::shared_ptr<Object>(&object, [](auto* /*p*/) { /*do nothing*/ }));
     }
 
     ObjectHolder ObjectHolder::None() {
@@ -94,37 +95,27 @@ namespace runtime {
         throw std::runtime_error("Not implemented"s);
     }
 
-    Class::Class(std::string name, std::vector<Method> methods, const Class* parent):
-    name_(std::move(name)), methods_(std::move(methods)){
-        if (parent) {
-            parent_ = parent;
-        } else {
-            parent_ = this;
+    Class::Class(std::string name, std::vector<Method> methods, const Class* parent)
+            : parent_(parent), name_(std::move(name)), methods_(std::move(methods)) {
+        if (parent_ != nullptr) {
+            std::for_each(parent_->methods_.begin(), parent_->methods_.end(), [this](const Method& method) {methods_parts_[method.name] = &method; });
         }
+        std::for_each(methods_.begin(), methods_.end(), [this](const Method& method) {methods_parts_[method.name] = &method; });
     }
 
     const Method* Class::GetMethod(const std::string& name) const {
-        for (const auto & method : methods_){
-            if (method.name == name) {
-                return &method;
-            }
+        if (methods_parts_.count(name) > 0) {
+            return methods_parts_.at(name);
         }
-        if (this->parent_ != this){
-            return parent_->GetMethod(name);
-        } else {
-            return nullptr;
-        }
+        return nullptr;
     }
 
-    [[nodiscard]] const std::string& Class::GetName() const {
-        if (name_.empty()){
-            throw std::runtime_error("Not implemented"s);
-        }
-        return name_;
+    const std::string& Class::GetName() const {
+        return this->name_;
     }
 
-    void Class::Print(ostream& os, [[maybe_unused]] Context& context) {
-        os << "Class " << GetName();
+    void Class::Print(ostream& os, Context& /*context*/) {
+        os << "Class " << name_;
     }
 
     void Bool::Print(std::ostream& os, [[maybe_unused]] Context& context) {

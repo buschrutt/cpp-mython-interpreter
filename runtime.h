@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <map>
 
 namespace runtime {
 
@@ -138,9 +139,10 @@ namespace runtime {
         void Print(std::ostream& os, Context& context) override;
 
     private:
+        const Class* parent_;
         std::string name_;
         std::vector<Method> methods_;
-        const Class* parent_;
+        std::map<std::string_view, const Method*> methods_parts_;
     };
 
     // Class instance
