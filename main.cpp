@@ -117,24 +117,20 @@ void TestAll() {
     runtime::RunObjectHolderTests(tr);
     runtime::RunObjectsTests(tr);
     ast::RunUnitTests(tr);
-
     TestParseProgram(tr);
 
     RUN_TEST(tr, TestSimplePrints);
     RUN_TEST(tr, TestAssignments);
     RUN_TEST(tr, TestArithmetics);
-
     RUN_TEST(tr, TestVariablesArePointers);
 }
 
 }  // namespace
 
 int main() {
-
-    std::cout << "FLAG-- \n \n" << std::endl;
-
     try {
         TestAll();
+
         RunMythonProgram(cin, cout);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
